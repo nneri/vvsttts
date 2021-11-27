@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<HTML>
+    <HEAD>
+    <!--
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    -->
+    <!-- for HTML5 tag -->
+    <meta charset="UTF-8">
+    <TITLE></TITLE>
+    <script>
+      window.enable = false;
+      let base      = 'http://localhost:50021/';
+      let sendQuery = (data)=>{
+        let uri = base+"synthesis/?speaker=0";
+        let speaker = "0";
+        let elements = document.getElementsByName("speaker");
+        for (let i=0;i < elements.length ; i ++ ){
+          if(elements.item(i).checked){
+            speaker = elements.item(i).value;
+          }
+        }
+        fetch('http://localhost:50021/synthesis?speaker='+speaker, {
+              method: 'POST',
+              headers: {
+                        'Content-Type': 'application/json'
+                    },
+              body: data
+        }).then(response => response.blob())
+          .then( data=>{
+             const file_area = document.getElementById('file_area');
+              const audio_element = document.createElement('audio');
+              audio_element.src = URL.createObjectURL(data);
+              audio_element.controls = true;
+              audio_element.autoplay = true;
+              file_area.innerHTML = "";
+              file_area.appendChild(audio_element);
+        });
+
+      }
+      let sendText = (text)=>{
+        let uri = base+"audio_query/?speaker=2&text="+text
+        fetch(uri,{method:"POST"}).then(response=>response.json()).then(data=>{
+          console.log(data);
+          let vol = document.getElementById('volume');
+          let spd = document.getElementById('speed');
+          let pit = document.getElementById('pitch');
+          let itn = document.getElementById('intonation');
+          data.volumeScale = vol.value;
+          data.speedScale = spd.value;
+          data.pitchScale = pit.value;
+          data.intonationScale = itn.value;
+          sendQuery(JSON.stringify(data));
+        });
+      }
+    window.onload = function() {
+    SpeechRecognition = webkitSpeechRecognition || SpeechRecognition;
+    let f = document.getElementById('msg');
+    let sts = document.getElementById('status');
+    window.result = false;
+    const recognition = new SpeechRecognition();
+    window.recognition = recognition;
+    console.log("start");
+    console.log(recognition);
+
+    recognition.onresult = (event) => {
+        var _msg = event.results[0][0].transcript;
+        f.innerHTML=_msg;
+        sts.innerHTML = 'stop';
+        sendText(_msg);
+        result = true;
+    }
+
+    recognition.onerror = (event)=>{
+	    f.innerHTML='error';
+       //location.reload();
+      if(window.enable){
+       recognition.start();
+      }
+    }
+    recognition.onend = (event) =>{
+      console.log(event);
+      if(window.result){
+        sts.innerHTML='onEnd success';
+        if(window.enable){
+          recognition.start();
+        }
+      }else{
+        sts.innerHTML='onEnd fail';
+        if(window.enable){
+          recognition.start();
+        }
+      }
+      window.result = false;
+    }
+    recognition.onnomatch = (event) =>{
+      console.log("音声認識失敗");
+      console.log(event);
+	    sts.innerHTML='音声認識失敗';
+    }
+    sts.innerHTML = 'listen';
+    f.innerHTML='start';
+    }
+  var Start= ()=>{
+    console.log(window.recognition);
+    window.enable = true;
+    window.recognition.start();
+  }
+  var End= ()=>{
+    window.result = true;
+    window.enable = false;
+    window.recognition.stop();
+  }
+    </script>
+    <style>
+.container {
+    display:flex;
+}
+        .character{
+            border:1px solid
+        }
+    </style>
+	</HEAD>
+	<BODY>
+            <input type="button" value="開始" onclick="Start();"/>
+            <input type="button" value="停止" onclick="End();"/><br />
+            <div class="container">
+        <div id="character1" class="character">
+            四国めたん
+            <div class="item">
+                <input type="radio" name="speaker" value="0" checked>あまあま
+                <input type="radio" name="speaker" value="2" >ノーマル
+                <input type="radio" name="speaker" value="4" >セクシー
+                <input type="radio" name="speaker" value="6" >ツンツン 
+            </diV>
+                ずんだもん
+            <div class="item">
+                <input type="radio" name="speaker" value="1" >あまあま
+                <input type="radio" name="speaker" value="3" >ノーマル
+                <input type="radio" name="speaker" value="5" >セクシー
+                <input type="radio" name="speaker" value="7" >ツンツン 
+            </diV>
+            <div class="item">
+                <input type="radio" name="speaker" value="8" >春日部つむぎ
+                <input type="radio" name="speaker" value="9" >波音リツ
+            </div>
+                <div class="container">
+                    <div class="item">
+                        速度      <BR>
+                    ボリューム    <BR>
+                    ピッチ        <BR>
+                    抑揚          <BR>
+                    </div>
+                <div class="item">
+                    <input type="range" id="speed" name="speed" min="0.5" max="1.5" value="1" step="0.1"> <BR/>
+                    <input type="range" id="volume" name="volume" min="0" max="5" value="1" step="0.5"> <BR/>
+                    <input type="range" id="pitch" name="pitch" min="-0.15" max="0.15" value="0" step="0.01"> <BR/>
+                    <input type="range" id="intonation" name="intonation" min="0" max="2" value="1" step="0.1">
+                </div>
+            </div>
+        </div> <!--end ob character-->
+                <!--
+        <div id="character2" class="character">
+            四国めたん
+            <div class="item">
+                <input type="radio" name="speaker2" value="0" checked>あまあま
+                <input type="radio" name="speaker2" value="2" >ノーマル
+                <input type="radio" name="speaker2" value="4" >セクシー
+                <input type="radio" name="speaker2" value="6" >ツンツン 
+            </diV>
+                ずんだもん
+            <div class="item">
+                <input type="radio" name="speaker2" value="1" >あまあま
+                <input type="radio" name="speaker2" value="3" >ノーマル
+                <input type="radio" name="speaker2" value="5" >セクシー
+                <input type="radio" name="speaker2" value="7" >ツンツン 
+            </diV>
+            <div class="item">
+                <input type="radio" name="speaker2" value="8" >春日部つむぎ
+                <input type="radio" name="speaker2" value="9" >波音リツ
+            </div>
+                <div class="container">
+                    <div class="item">
+                        速度      <BR>
+                    ボリューム    <BR>
+                    ピッチ        <BR>
+                    抑揚          <BR>
+                    </div>
+                <div class="item">
+                    <input type="range" id="speed2" name="speed2" min="0.5" max="1.5" value="1" step="0.1"> <BR/>
+                    <input type="range" id="volume2" name="volume2" min="0" max="5" value="1" step="0.5"> <BR/>
+                    <input type="range" id="pitch2" name="pitch2" min="-0.15" max="0.15" value="0" step="0.01"> <BR/>
+                    <input type="range" id="intonation2" name="intonation2" min="0" max="2" value="1" step="0.1">
+                </div>
+            </div>
+        </div>
+            -->
+        <!--end ob character2-->
+            </div>
+                <div>
+                <div id='msg'> </div>
+                <div id='status'> </div>
+                <div id='file_area'> </div>
+                </div>
+    </BODY>
+</HTML>
+
+
