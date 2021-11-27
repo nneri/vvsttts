@@ -10,23 +10,7 @@
     <script>
       window.enable = false;
       let base      = 'http://localhost:50021/';
-      let sendQuery = (data)=>{
-        let uri = base+"synthesis/?speaker=0";
-        let speaker = "0";
-        let elements = document.getElementsByName("speaker");
-        for (let i=0;i < elements.length ; i ++ ){
-          if(elements.item(i).checked){
-            speaker = elements.item(i).value;
-          }
-        }
-        fetch('http://localhost:50021/synthesis?speaker='+speaker, {
-              method: 'POST',
-              headers: {
-                        'Content-Type': 'application/json'
-                    },
-              body: data
-        }).then(response => response.blob())
-          .then( data=>{
+      let play = (data)=>{
              const file_area = document.getElementById('file_area');
               const audio_element = document.createElement('audio');
               audio_element.src = URL.createObjectURL(data);
@@ -34,22 +18,58 @@
               audio_element.autoplay = true;
               file_area.innerHTML = "";
               file_area.appendChild(audio_element);
-        });
-
+              }
+      let sendQuery = (data,speaker)=>{
+        fetch('http://localhost:50021/synthesis?speaker='+speaker, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: data
+        }).then(response => response.blob())
+          .then( play);
+      };
+      let sendQueryMulti = (data,speaker1,speaker2,rate)=>{
+        fetch('http://localhost:50021/synthesis_morphing?base_speaker='+speaker1+'&target_speaker='+speaker2+'&morph_rate='+rate, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: data
+        }).then(response => response.blob())
+          .then( play);
+      }
+      let getSpekaer = (id)=>{
+          let speaker = "0";
+          let elements = document.getElementsByName("speaker"+id);
+                console.log(id);
+        console.log(elements);
+          for (let i=0;i < elements.length ; i ++ ){
+                console.log(elements.item(i).checked);
+              if(elements.item(i).checked){
+                  speaker = elements.item(i).value;
+              }
+          }
+          return speaker;
       }
       let sendText = (text)=>{
-        let uri = base+"audio_query/?speaker=2&text="+text
+        let speaker = getSpekaer("");
+        let speaker2 = getSpekaer("2");
+        let uri = base+"audio_query/?speaker="+speaker+"&text="+text;
         fetch(uri,{method:"POST"}).then(response=>response.json()).then(data=>{
           console.log(data);
-          let vol = document.getElementById('volume');
-          let spd = document.getElementById('speed');
-          let pit = document.getElementById('pitch');
-          let itn = document.getElementById('intonation');
-          data.volumeScale = vol.value;
-          data.speedScale = spd.value;
-          data.pitchScale = pit.value;
-          data.intonationScale = itn.value;
-          sendQuery(JSON.stringify(data));
+          let vol = document.getElementById('volume').value;
+          let spd = document.getElementById('speed').value;
+          let pit = document.getElementById('pitch').value;
+          let itn = document.getElementById('intonation').value;
+          let rat = document.getElementById('morphRate').value;
+          data.volumeScale = vol;
+          data.speedScale = spd;
+          data.pitchScale = pit;
+          data.intonationScale = itn;
+          //sendQuery(JSON.stringify(data),speaker);
+          if(rat == 0){
+            sendQuery(JSON.stringify(data),speaker);
+          }else{
+            sendQueryMulti(JSON.stringify(data),speaker,speaker2,rat);
+          }
+
         });
       }
     window.onload = function() {
@@ -149,27 +169,29 @@
                     ボリューム    <BR>
                     ピッチ        <BR>
                     抑揚          <BR>
+                    合成レート         <BR>
                     </div>
                 <div class="item">
                     <input type="range" id="speed" name="speed" min="0.5" max="1.5" value="1" step="0.1"> <BR/>
                     <input type="range" id="volume" name="volume" min="0" max="5" value="1" step="0.5"> <BR/>
                     <input type="range" id="pitch" name="pitch" min="-0.15" max="0.15" value="0" step="0.01"> <BR/>
-                    <input type="range" id="intonation" name="intonation" min="0" max="2" value="1" step="0.1">
+                    <input type="range" id="intonation" name="intonation" min="0" max="2" value="1" step="0.1"><BR/>
+                    <input type="range" id="morphRate" name="morphRate" min="0" max="1" value="0" step="0.1">
                 </div>
             </div>
         </div> <!--end ob character-->
-                <!--
         <div id="character2" class="character">
+
             四国めたん
             <div class="item">
-                <input type="radio" name="speaker2" value="0" checked>あまあま
+                <input type="radio" name="speaker2" value="0" >あまあま
                 <input type="radio" name="speaker2" value="2" >ノーマル
                 <input type="radio" name="speaker2" value="4" >セクシー
                 <input type="radio" name="speaker2" value="6" >ツンツン 
             </diV>
                 ずんだもん
             <div class="item">
-                <input type="radio" name="speaker2" value="1" >あまあま
+                <input type="radio" name="speaker2" value="1" checked>あまあま
                 <input type="radio" name="speaker2" value="3" >ノーマル
                 <input type="radio" name="speaker2" value="5" >セクシー
                 <input type="radio" name="speaker2" value="7" >ツンツン 
@@ -178,26 +200,12 @@
                 <input type="radio" name="speaker2" value="8" >春日部つむぎ
                 <input type="radio" name="speaker2" value="9" >波音リツ
             </div>
-                <div class="container">
-                    <div class="item">
-                        速度      <BR>
-                    ボリューム    <BR>
-                    ピッチ        <BR>
-                    抑揚          <BR>
-                    </div>
-                <div class="item">
-                    <input type="range" id="speed2" name="speed2" min="0.5" max="1.5" value="1" step="0.1"> <BR/>
-                    <input type="range" id="volume2" name="volume2" min="0" max="5" value="1" step="0.5"> <BR/>
-                    <input type="range" id="pitch2" name="pitch2" min="-0.15" max="0.15" value="0" step="0.01"> <BR/>
-                    <input type="range" id="intonation2" name="intonation2" min="0" max="2" value="1" step="0.1">
-                </div>
             </div>
         </div>
-            -->
         <!--end ob character2-->
             </div>
                 <div>
-                <div id='msg'> </div>
+                <div id='msg'> msg  </div>
                 <div id='status'> </div>
                 <div id='file_area'> </div>
                 </div>
