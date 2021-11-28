@@ -122,6 +122,7 @@
     }
   var Start= ()=>{
     console.log(window.recognition);
+    document.getElementById('enable').innerHTML = "ON"
     window.enable = true;
     window.recognition.start();
   }
@@ -129,6 +130,7 @@
     window.result = true;
     window.enable = false;
     window.recognition.stop();
+    document.getElementById('enable').innerHTML = "OFF"
   }
     </script>
     <style>
@@ -205,8 +207,9 @@
         <!--end ob character2-->
             </div>
                 <div>
+                <div id='enable'> OFF  </div>
                 <div id='msg'> msg  </div>
-                <div id='status'> </div>
+                <div id='status'></div>
                 <div id='file_area'> </div>
                 </div>
     </BODY>
