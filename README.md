@@ -1,6 +1,9 @@
 #概要
 ブラウザの音声認識でVoiceVoxの音声合成を再生する
 
+下記リポジトリに移動しました
+https://github.com/nneri-hin/vvsttts/
+
 #使用方法
 下記webサイトよりVoiceVox本体を入手してください
 voicevox( https://voicevox.hiroshiba.jp/ )
